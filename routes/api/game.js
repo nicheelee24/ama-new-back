@@ -161,6 +161,94 @@ router.get("/:page", async (req, res) => {
 //     }
 // });
 
+async function loginToDC(username) {
+    // {
+    //     "Username" : "34534534",
+    //     "Portfolio" : "SportsBook",
+    //     "IsWapSports": false,
+    //     "CompanyKey": "BBF0EE16CE064E1891344266F2C06F16",
+    //     "ServerId": "login-player"
+    // }
+console.log(username);
+                var options = {
+                method: "POST",
+                url: process.env.DCT_BASE_URL + "/dct/loginGame",
+                headers: { "content-type": "application/x-www-form-urlencoded" },
+                data: {
+                    brand_id: process.env.BRAND_ID,
+                    sign: process.env.BRAND_KEY_HASH,
+                    brand_uid: 'player1',
+                    game_id: gameCode,
+                    currency: 'THB',
+                    platform,
+                    gameType,
+                    language: "en",
+                    channel: 'pc',
+                   
+                },
+            };
+    
+            console.log(options.data);
+
+            await axios
+            .request(options)
+            .then(function (response) {
+                console.log("DCT response.data===", response.data);
+                if (response.code == "1000") {
+                    res.json({
+                        status: "0000",
+                        session_url: response.data.game_url,
+                    });
+                } else {
+                    res.json({
+                        status: response.code,
+                        desc: response.msg,
+                    });
+                }
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
+
+        
+
+
+
+
+
+
+
+    var options = {
+        method: "POST",
+        url: process.env.SBO_BASE_URL + "web-root/restricted/player/login.aspx",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        data: {
+            Username: username,
+            Portfolio: "SportsBook",
+            IsWapSports: false,
+            CompanyKey: process.env.SBO_COMPANY_KEY,
+            ServerId: "login-player",
+        },
+    };
+
+    console.log(options);
+
+    try {
+        const response = await axios.request(options);
+        console.log("sbo response-", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("auth~~~request~~~: " + error);
+        throw error; // or return an error object
+    }
+}
+
+
+
+
+
+
+
 async function loginToSBO(username) {
     // {
     //     "Username" : "34534534",
@@ -206,6 +294,8 @@ router.get("/play/:id", auth, async (req, res) => {
         let autoBetMode = null;
         let enableTable = null;
         let tid = null;
+        console.log(game.platform);
+        console.log("playyyyyyyyyyyyyyy//iddd");
 
         if (game.platform != "SBO") {
             if (game.platform == "SEXYBCRT") {
@@ -507,6 +597,20 @@ router.get("/play/:id", auth, async (req, res) => {
                     desc: resp_sbo.error.msg,
                 });
         }
+        else if (game.platform == "yg") {
+            const user = await User.findById(req.user.id).select("-password");
+            const resp_sbo = await loginToDC(user.name);
+            if (resp_sbo.error.msg == "No Error")
+                res.json({
+                    status: "0000",
+                    session_url: resp_sbo.url,
+                });
+            else
+                res.json({
+                    status: "0001",
+                    desc: resp_sbo.error.msg,
+                });
+            }
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server Error");
@@ -518,6 +622,7 @@ router.get("/play/:id", auth, async (req, res) => {
 // @access   Private
 router.post("/play", auth, async (req, res) => {
     try {
+       
         const { gameCode, gameType, platform, hall, tid } = req.body;
         const user = await User.findById(req.user.id).select("-password");
         const betLimit = {};
@@ -580,6 +685,7 @@ router.post("/play", auth, async (req, res) => {
         }
         if(platform!='yg')
         {
+           
         var options = {
             method: "POST",
             url: process.env.AWC_HOST + "/wallet/doLoginAndLaunchGame",
@@ -624,50 +730,7 @@ router.post("/play", auth, async (req, res) => {
                 console.error(error);
             });
         }
-        if(platform=='yg')
-        {
-
-            var options = {
-                method: "POST",
-                url: process.env.DCT_BASE_URL + "/dct/loginGame",
-                headers: { "content-type": "application/x-www-form-urlencoded" },
-                data: {
-                    brand_id: process.env.BRAND_ID,
-                    sign: process.env.BRAND_KEY_HASH,
-                    brand_uid: 'player1',
-                    game_id: gameCode,
-                    currency: 'THB',
-                    platform,
-                    gameType,
-                    language: "en",
-                    channel: 'pc',
-                   
-                },
-            };
-    
-            console.log(options.data);
-
-            await axios
-            .request(options)
-            .then(function (response) {
-                console.log("DCT response.data===", response.data);
-                if (response.code == "1000") {
-                    res.json({
-                        status: "0000",
-                        session_url: response.data.game_url,
-                    });
-                } else {
-                    res.json({
-                        status: response.code,
-                        desc: response.msg,
-                    });
-                }
-            })
-            .catch(function (error) {
-                console.error(error);
-            });
-
-        }
+       
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server Error in game play");
