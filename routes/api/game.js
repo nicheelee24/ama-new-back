@@ -240,10 +240,10 @@ router.get("/play/:id", auth, async (req, res) => {
             var options = {
                 method: "POST",
                 url: process.env.DCT_BASE_URL + "/dct/loginGame",
-                headers: { "content-type": "application/x-www-form-urlencoded" },
+                headers: { "content-type": "application/json" },
                 data: {
                     brand_id: process.env.BRAND_ID,
-                    sign: process.env.BRAND_KEY_HASH,
+                    sign: process.env.BRAND_USER_KEY_HASH,
                     brand_uid: 'player1',
                     game_id: game.gameCode,
                     currency: 'THB',
