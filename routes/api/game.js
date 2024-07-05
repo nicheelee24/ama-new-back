@@ -578,6 +578,8 @@ router.post("/play", auth, async (req, res) => {
                 };
             }
         }
+        if(platform!='yg')
+        {
         var options = {
             method: "POST",
             url: process.env.AWC_HOST + "/wallet/doLoginAndLaunchGame",
@@ -621,10 +623,56 @@ router.post("/play", auth, async (req, res) => {
             .catch(function (error) {
                 console.error(error);
             });
+        }
+        if(platform=='yg')
+        {
+
+            var options = {
+                method: "POST",
+                url: process.env.DCT_BASE_URL + "/dct/loginGame",
+                headers: { "content-type": "application/x-www-form-urlencoded" },
+                data: {
+                    brand_id: process.env.BRAND_ID,
+                    sign: process.env.BRAND_KEY_HASH,
+                    brand_uid: 'player1',
+                    game_id: gameCode,
+                    currency: 'THB',
+                    platform,
+                    gameType,
+                    language: "en",
+                    channel: 'pc',
+                   
+                },
+            };
+    
+            console.log(options.data);
+
+            await axios
+            .request(options)
+            .then(function (response) {
+                console.log("DCT response.data===", response.data);
+                if (response.code == "1000") {
+                    res.json({
+                        status: "0000",
+                        session_url: response.data.game_url,
+                    });
+                } else {
+                    res.json({
+                        status: response.code,
+                        desc: response.msg,
+                    });
+                }
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
+
+        }
     } catch (err) {
         console.error(err.message);
-        res.status(500).send("Server Error");
+        res.status(500).send("Server Error in game play");
     }
+
 });
 
 module.exports = router;
