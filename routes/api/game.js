@@ -260,16 +260,16 @@ router.get("/play/:id", auth, async (req, res) => {
             .request(options)
             .then(function (response) {
                 console.log("DCT response.data===", response.data);
-                console.log("DCT response.code===", response.data.code);
-                if (response.code == "1000") {
+               // console.log("DCT response.code===", response.data.code);
+                if (response.data.code == "1000") {
                     res.json({
                         status: "0000",
                         session_url: response.data.game_url,
                     });
                 } else {
                     res.json({
-                        status: response.code,
-                        desc: response.msg,
+                        status: response.data.code,
+                        desc: response.data.msg,
                     });
                 }
             })
