@@ -13,7 +13,7 @@ const User = require("../../models/User");
 // @access   Private
 router.get("/", auth, async (req, res) => {
     try {
-        console.log("auth function called..");
+        console.log("auth function called.....");
         const user = await User.findById(req.user.id).select("-password -rpwd");
         res.json(user);
     } catch (err) {
