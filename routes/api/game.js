@@ -260,6 +260,7 @@ router.get("/play/:id", auth, async (req, res) => {
             .request(options)
             .then(function (response) {
                 console.log("DCT response.data===", response.data);
+                console.log("DCT response.code===", response.data.code);
                 if (response.code == "1000") {
                     res.json({
                         status: "0000",
