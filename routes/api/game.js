@@ -231,20 +231,26 @@ router.get("/play/:id", auth, async (req, res) => {
     try {
         const game = await Game.findById(req.params.id);
         const user = await User.findById(req.user.id).select("-password");
+
+        const brand_id=process.env.BRAND_ID;
+        const brand_uid=user.name;
+        const api_key=process.env.KEY_ID;
+        const HASH = brand_id+brand_uid+api_key;
+        const hashh = require('crypto').createHash('md5').update(HASH).digest('hex').toString().toUpperCase();
        
         console.log(game.platform);
         console.log("playyyyyyyyyyyyyyy//iddd");
 
-        if (game.platform == "yg") {
+        if (game.platform == "AvatarUX" || game.platform=="Peter Sons" || game.platform=="FunTa Gaming" || game.platform=="Evoplay" || game.platform == "Hacksaw Gaming" || game.platform == "Nolimit City" || game.platform=="ParlayBay" || game.platform == "Relax Gaming" || game.platform == "Slotmill" || game.platform == "Yggdrasil Gaming" || game.platform=="Play'n GO" || game.platform=="Turbo Games (Asia)" || game.platform=="SmartSoft") {
             
             var options = {
                 method: "POST",
                 url: process.env.DCT_BASE_URL + "/dct/loginGame",
                 headers: { "content-type": "application/json" },
                 data: {
-                    brand_id: process.env.BRAND_ID,
-                    sign: process.env.BRAND_USER_KEY_HASH,
-                    brand_uid: 'player1',
+                    brand_id: brand_id,
+                    sign: hashh,
+                    brand_uid: brand_uid,
                     game_id: game.gameCode,
                     currency: 'THB',
                     language: "en",

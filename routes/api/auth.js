@@ -184,8 +184,9 @@ router.post(
             const token = jwt.sign(payload, process.env.JWT_SECRET, {
                 expiresIn: "5 days",
             });
+            const user_phone=user.phone;
 
-            res.json({ status: "0000", token, msg: "Login successful" });
+            res.json({ status: "0000", token, user_phn: user_phone });
             //res.json({ status: "0000", msg: "Login successfully!" });
 
             // user.platform

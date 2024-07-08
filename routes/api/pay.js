@@ -127,22 +127,44 @@ router.post("/bigpay", async (req, res) => {
 
 });
 
-router.post("/deposit", auth, async (req, res) => {
+router.post("/deposit", async (req, res) => {
     try {
 
         console.log("deposit function called..");
         const { amount, currency, platform } = req.body;
-
+        const bill_no=require('crypto').randomBytes(10).toString('hex');
+        const  brand_id= process.env.BRAND_ID;
+        
+        //console.log(bill_no);
+        console.log("before user"+req.body);
+      const phn=  window.localStorage.setItem("phn", response.data.user_phn);
+      console.log("Phnnnn"+phn);
         const user = await User.findById(req.user.id).select("-password");
+        
+        const brand_uid= user.name;
+        const dct_key=process.env.KEY_ID;
+        const HASH = brand_id+brand_uid+dct_key;
+        const hashh = require('crypto').createHash('md5').update(HASH).digest('hex').toString().toUpperCase();
         const DEPOSIT_URL = `${process.env.PMG_BASE_URL}/api/v1/Payment/Deposit`;
+        const DEPOSIT_URL_DCT = `${process.env.DCT_BASE_URL}/dct/credit`;
 
         await axios
             .post(
-                DEPOSIT_URL,
+                DEPOSIT_URL_DCT,
                 {
-                    clientCode: process.env.CLIENT_CODE,
-                    memberFlag: user.name,
+                    // --- BANK API PARAMS ---
+                    // clientCode: process.env.CLIENT_CODE,
+                    // memberFlag: user.name,
+                    // amount: amount,
+
+                    // --- DCT CREDIT API PARAMS ---
+                    brand_id: process.env.BRAND_ID,
+                    sign: hashh,
+                    brand_uid: user.name,
                     amount: amount,
+                    bill_no: bill_no,
+                    currency: "THB",
+                    country_code: "TH",
                     hrefbackUrl:
                         platform == "ama777agent"
                             ? "https://amma-front-xy5tg.ondigitalocean.app/api/pay/deposit_callback"
@@ -154,10 +176,10 @@ router.post("/deposit", auth, async (req, res) => {
                         "Content-Type": "application/json",
                         // "authorization": HASH,
 
-                        "Accept": "application/json",
-                        //"api-key": _key,
-                        //"time": current_time
-                        Authorization: `Bearer ${process.env.TESLLA_PAY_TOKEN}`,
+                        //"Accept": "application/json",
+                       
+
+                       // Authorization: `Bearer ${process.env.TESLLA_PAY_TOKEN}`,
                     },
                 }
             )
@@ -168,22 +190,22 @@ router.post("/deposit", auth, async (req, res) => {
 
                     try {
                         let transaction = new Transaction({
-                            userid: req.user.id,
-                            clientCode: process.env.CLIENT_CODE,
-                            payAmount: resp.requestAmount,
-                            trxNo: resp.orderNo,
-                            sign: resp.sign,
-                            status: resp.status,
-                            type: "deposit",
-                            platform: platform,
+                           // userid: req.user.id,
+                          //  clientCode: "",//process.env.CLIENT_CODE,
+                          //  payAmount: resp.requestAmount,
+                          //  trxNo: resp.orderNo,
+                           // sign: resp.sign,
+                           // status: resp.status,
+                           // type: "deposit",
+                           // platform: "DCT",
                         });
-                        transaction.save();
+                       // transaction.save();
 
                         User.findById(req.user.id)
                             .then((user) => {
                                 user.balance =
                                     Number(user.balance) +
-                                    Number(resp.requestAmount);
+                                    Number(req.amount);
                                 user.save();
                                 console.log("user balance updated");
                             })
@@ -197,7 +219,7 @@ router.post("/deposit", auth, async (req, res) => {
                         //console.log("/deposit error", ex);
                     }
 
-                    res.send({ payUrl: resp.payUrl });
+                  //  res.send({ payUrl: resp.payUrl });
 
 
 
