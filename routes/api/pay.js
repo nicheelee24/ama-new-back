@@ -20,9 +20,9 @@ router.post("/bigpay", async (req, res) => {
         console.log(req.body);
         console.log("bigpay deposit function called..");
         const merchant_code = process.env.MerchantCode;
-        const ref_id = '3vghdg';
+        const ref_id = 'dfgdfgdg';
         const player_username = 'player1';
-        const player_ip = '223.178.208.222';
+        const player_ip = '148.113.3.153';
         const currency_code = process.env.Currency;
         const amount = '1000.00';
         const lang = process.env.LANGUAGE;
@@ -37,7 +37,7 @@ router.post("/bigpay", async (req, res) => {
 
 
 
-        const hashh = require('crypto').createHash('md5', "2794398D881A4AAA8A3EB141232DEAD9").update(HASH).digest().toString('hex');
+        const hashh = require('crypto').createHash('md5', "f1t0urr4LXprTuQuiDuHbsUBu7eTSD+vqxuvh16+IfY=").update(HASH).digest().toString('hex');
 
 
         await axios
