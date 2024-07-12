@@ -26,6 +26,10 @@ const transactionSchema = new mongoose.Schema({
     trxNo: {
         type: String,
     },
+    token: {
+        type: String,
+    }
+    ,
     coinUnit: {
         type: String,
     },

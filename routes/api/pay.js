@@ -13,47 +13,91 @@ const Bet = require("../../models/Bet");
 const Bigp = require("../../models/Bigp");
 
 
-
-router.post("/bigpay", async (req, res) => {
+router.post("/bank_deposit_return",auth, async (req, res) => {
     try {
 
-        console.log(req.body);
-        console.log("bigpay deposit function called..");
-        const merchant_code = process.env.MerchantCode;
-        const ref_id = 'dfgdfgdg';
-        const player_username = 'player1';
-        const player_ip = '148.113.3.153';
-        const currency_code = process.env.Currency;
-        const amount = '1000.00';
-        const lang = process.env.LANGUAGE;
-        const client_url = process.env.CLient_url;
-        const view = process.env.VIEW;
+        console.log(res);
+    }
+    catch(ex)
+    {
+console.log(ex);
+    }
+});
 
 
 
-        const DEPOSIT_URL = `https://promptpay-api.bigpayz.net/BankBot/QRScanDeposit`;
-        const HASH = merchant_code + ref_id + player_username + player_ip + currency_code + amount + client_url;
+router.post("/deposit", auth, async (req, res) => {
+    try {
+
+        //console.log(req.body);
+        console.log("bigpay bank deposit function called..");
+        const user = await User.findById(req.user.id).select("-password");
+        //console.log(user.name);
+
+        //--BIGPAY BANK METHOD PARAMS
+
+        const MerchantCode = process.env.MerchantCode;
+        const ReturnURL="http://148.113.3.153:3000/";
+        const FailedReturnURL="http://148.113.3.153:3000/error";
+        const HTTPPostURL="http://148.113.3.153:5000/api/pay/bank_deposit_return";
+        const Amount="50.00";
+        const Currency="THB";
+        const ItemID=require('crypto').randomBytes(6).toString('hex');
+        const ItemDescription="bank payment";
+        const PlayerId=user.phone.toString();
+        const DEPOSIT_URL = `https://payin-api.bigpayz.net/payin/depositv2`;
+        const HASH = MerchantCode + ItemID + Currency + Amount;
+        const BankCode="KSKB";
+        
+        //-- BIGPAY QR CODE METHOD PARAMS
+
+        // const merchant_code = process.env.MerchantCode;
+        // const ref_id = require('crypto').randomBytes(6).toString('hex');;
+        // const player_username =user.phone.toString();
+        // const player_ip = process.env.PLAYER_IP;
+        // const currency_code = process.env.Currency;
+        // const amount = req.body.amount;
+        // const lang = process.env.LANGUAGE;
+        // const client_url = process.env.CLient_url;
+        // const view = process.env.VIEW;
+
+
+
+        // const DEPOSIT_URL = `https://promptpay-api.bigpayz.net/BankBot/QRScanDeposit`;
+        // const HASH = merchant_code + ref_id + player_username + player_ip + currency_code + amount + client_url;
 
 
 
 
-        const hashh = require('crypto').createHash('md5', "f1t0urr4LXprTuQuiDuHbsUBu7eTSD+vqxuvh16+IfY=").update(HASH).digest().toString('hex');
+        const hashh = require('crypto').createHmac('sha256', "f1t0urr4LXprTuQuiDuHbsUBu7eTSD+vqxuvh16+IfY=").update(HASH).digest('hex');
 
 
         await axios
             .post(
                 DEPOSIT_URL,
                 {
-                    merchant_code: merchant_code,
-                    ref_id: ref_id,
-                    player_username: player_username,
-                    player_ip: player_ip,
-                    currency_code: currency_code,
-                    amount: amount,
-                    lang: lang,
-                    client_url: client_url,
-                    view: view,
-                    hash: hashh,
+                    MerchantCode: MerchantCode,
+                    ReturnURL: ReturnURL,
+                    FailedReturnURL: FailedReturnURL,
+                    HTTPPostURL: HTTPPostURL,
+                    Amount: Amount,
+                    Currency: Currency,
+                    ItemID: ItemID,
+                    ItemDescription: ItemDescription,
+                    PlayerId: PlayerId,
+                    BankCode:BankCode,
+                    Hash: hashh,
+
+                    // merchant_code: merchant_code,
+                    // ref_id: ref_id,
+                    // player_username: player_username,
+                    // player_ip: player_ip,
+                    // currency_code: currency_code,
+                    // amount: amount,
+                    // lang: lang,
+                    // client_url: client_url,
+                    // view: view,
+                    // hash: hashh,
 
 
                 },
@@ -70,53 +114,62 @@ router.post("/bigpay", async (req, res) => {
                 }
             )
             .then(function (resonse) {
+                console.log("response..." + resonse.data);
+                const resp=resonse.data;
+                console.log(resp);
+                
+                if (resp.error_code == 0) {
+console.log(req.user.id);
 
-                var myJSON = JSON.stringify(resonse.data)
-                console.log("response..." + myJSON);
-                if (resonse.data.httpCode > 200) {
+                     try {
+                    let transaction = new Transaction({
+                        userid: req.user.id,
+                        clientCode: '',
+                        payAmount: req.body.amount,
+                        trxNo: resp.invoice_number,
+                        token: resp.token,
+                        status: 'initiated',
+                        type: "deposit",
+                        platform: 'bigpayz',
+                     });
+                    transaction.save();
 
-
-                    //  try {
-                    // let transaction = new Transaction({
-                    //     userid: req.user.id,
-                    //     clientCode: process.env.CLIENT_CODE,
-                    //     payAmount: resp.requestAmount,
-                    //     trxNo: resp.orderNo,
-                    //     sign: resp.sign,
-                    //     status: resp.status,
-                    //     type: "deposit",
-                    //     platform: platform,
-                    //  });
-                    // transaction.save();
-
-                    // User.findById(req.user.id)
-                    //     .then((user) => {
-                    //         user.balance =
-                    //             Number(user.balance) +
-                    //             Number(resp.requestAmount);
-                    //         user.save();
-                    //         console.log("user balance updated");
-                    //     })
-                    // .catch((err) => {
-                    //     console.log(
-                    //         "/user balance update error user",
-                    //         err
-                    //     );
-                    // });
-                    //   } catch (ex) {
-                    //console.log("/deposit error", ex);
-                    //  }
+                    User.findById(req.user.id)
+                        .then((user) => {
+                            user.balance =
+                                Number(user.balance) +
+                                Number(req.body.amount);
+                            user.save();
+                            console.log("user balance updated");
+                        })
+                    .catch((err) => {
+                        console.log(
+                            "/user balance update error user",
+                            err
+                        );
+                    });
+                      } catch (ex) {
+                    console.log("/deposit error", ex);
+                     }
 
                     //   res.send({ payUrl: resp.payUrl });
 
 
 
                     // res.json({ status: "0000"});
-                    const resp = response.data;
-                    console.log("resulttt----->" + resp);
+                    
+                    console.log("resulttt----->" + resp.redirect_to);
                     res.send({ payUrl: resp.redirect_to });
                 } else {
-                    console.log("errrrorororoor");
+                    console.log("Error calling bigpay deposit function");
+                    if(res.error_code==1)
+                    {
+                        res.send({error:"Parameters Error",error_code:resp.error_code,payUrl:""});
+                    }
+                    else{
+                        res.send({error:resp.error_message+"*",error_code:resp.error_code,payUrl:""});
+                    }
+                    
 
                 }
             });
@@ -127,7 +180,7 @@ router.post("/bigpay", async (req, res) => {
 
 });
 
-router.post("/deposit", async (req, res) => {
+router.post("/deposit_old",auth, async (req, res) => {
     try {
 
         console.log("deposit function called..");
@@ -137,8 +190,8 @@ router.post("/deposit", async (req, res) => {
         
         //console.log(bill_no);
         console.log("before user"+req.body);
-      const phn=  window.localStorage.setItem("phn", response.data.user_phn);
-      console.log("Phnnnn"+phn);
+     // const phn=  window.localStorage.setItem("phn", response.data.user_phn);
+     // console.log("Phnnnn"+phn);
         const user = await User.findById(req.user.id).select("-password");
         
         const brand_uid= user.name;
@@ -165,11 +218,8 @@ router.post("/deposit", async (req, res) => {
                     bill_no: bill_no,
                     currency: "THB",
                     country_code: "TH",
-                    hrefbackUrl:
-                        platform == "ama777agent"
-                            ? "https://amma-front-xy5tg.ondigitalocean.app/api/pay/deposit_callback"
-                            : "https://amma-front-xy5tg.ondigitalocean.app/api/pay/deposit_callback",
-
+                    hrefbackUrl:process.env.CALLBACK_URL
+                       
                 },
                 {
                     headers: {
@@ -184,9 +234,10 @@ router.post("/deposit", async (req, res) => {
                 }
             )
             .then(function (response) {
-                console.log("response..." + response);
-                if (response.data.httpCode == 200) {
-                    const resp = response.data.data;
+                const resp=response.data;
+                console.log(resp.data.code);
+                if (resp.data.code == 1000) {
+                   console.log("success");
 
                     try {
                         let transaction = new Transaction({
@@ -365,8 +416,81 @@ router.post("/withdraw", auth, async (req, res) => {
         console.log("Error Exception On Deposit", ex);
     }
 });
+router.post("/deposit_bigpay_callback", async (req, res) => {
+    console.log("call back function called...."+req.body);
+    const {
+        clientCode,
+        sign,
+        status,
+        payAmount,
+        chainName,
+        clientNo,
+        coinUnit,
+    } = req.body;
+    const filter = { trxNo: clientNo }; // Find a document with this condition
+    console.log("deposit_callback");
 
-router.post("/deposit_callback", async (req, res) => {
+    console.log(req.body);
+    if (status == "PAID") {
+        // + balance of the user
+        let trx = await Transaction.findOne(filter);
+
+        User.findById(trx.userid)
+            .then((user) => {
+                user.balance = Number(user.balance) + Number(payAmount);
+                user.save();
+            })
+            .catch((err) => {
+                console.log("/deposit_callback error user", err);
+            });
+
+        const update = {
+            clientCode,
+            status,
+            chainName,
+            coinUnit,
+        };
+
+        Transaction.findOneAndUpdate(filter, update, { new: true })
+            .then((updatedDocument) => {
+                if (updatedDocument) {
+                    console.log(
+                        `Successfully updated document: ${updatedDocument}.`
+                    );
+                } else {
+                    console.log("No document matches the provided query.");
+                }
+            })
+            .catch((err) =>
+                console.error(`Failed to find and update document: ${err}`)
+            );
+    } else if (status == "CANCEL") {
+        const update = {
+            status,
+        };
+
+        Transaction.findOneAndUpdate(filter, update, { new: true })
+            .then((updatedDocument) => {
+                if (updatedDocument) {
+                    console.log(
+                        `Successfully updated document: ${updatedDocument}.`
+                    );
+                } else {
+                    console.log("No document matches the provided query.");
+                }
+            })
+            .catch((err) =>
+                console.error(`Failed to find and update document: ${err}`)
+            );
+    }
+
+    res.json({ status: "0000" });
+
+    console.log("deposit_callback is called");
+    console.log(req.body);
+});
+
+router.post("/deposit_callback_OLD", async (req, res) => {
     const {
         clientCode,
         sign,
@@ -518,7 +642,7 @@ router.post("/balance", auth, async (req, res) => {
     console.log("transactin data..." + trans);
     if (user) {
         balance = user.balance ? user.balance : 0;
-        console.log("balance amaount...." + balance);
+        console.log("balance amaountttt...." + balance);
 
         console.log("user id..." + user._id);
         result = await Bet.aggregate([
@@ -602,6 +726,7 @@ router.post("/wager", auth, async (req, res) => {
 router.post("/total_balance", async (req, res) => {
     // {{BASE_URL}}/api/v1/Payout/CheckBalance?clientCode=S001812kAWFX
     // GET Method
+    console.log("total_balance from api called...");
     const CHECKOUT_BALANCE_URL = `${process.env.PMG_BASE_URL}/api/v1/Payout/CheckBalance?clientCode=${process.env.CLIENT_CODE}`;
 
     await axios
@@ -618,7 +743,7 @@ router.post("/total_balance", async (req, res) => {
         .then(function (response) {
             if (response.data.httpCode == 200) {
                 let balance = response.data.data.balance;
-
+console.log("balance from api.."+balance);
                 res.json({ balance });
             }
         });
