@@ -72,7 +72,7 @@ app.use("/bandai/api/log", require("./routes/bandai/log"));
 //   .catch(err => console.error('Failed to connect to MongoDB', err));
 mongoose
     .connect(
-        `mongodb+srv://doadmin:XHN08792u5Pkv6F3@db-mongodb-sgp1-91584-e8c22e4f.mongo.ondigitalocean.com/games2024?tls=true&authSource=admin&replicaSet=db-mongodb-sgp1-91584`,
+        `mongodb+srv://nicheelee24:3PeXZKHyKQQhaClJ@cluster0.8yb8idj.mongodb.net/games2024`,
             )
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("Failed to connect to MongoDB", err));
