@@ -241,7 +241,7 @@ router.get("/play/:id", auth, async (req, res) => {
         console.log(game.platform);
         console.log("playyyyyyyyyyyyyyy//iddd");
 
-        if (game.platform == "AvatarUX" || game.platform=="Peter Sons" || game.platform=="FunTa Gaming" || game.platform=="Evoplay" || game.platform == "Hacksaw Gaming" || game.platform == "Nolimit City" || game.platform=="ParlayBay" || game.platform == "Relax Gaming" || game.platform == "Slotmill" || game.platform == "Yggdrasil Gaming" || game.platform=="Play'n GO" || game.platform=="Turbo Games (Asia)" || game.platform=="SmartSoft") {
+        if (game.platform == "7Mojos" || game.platform == "AvatarUX" || game.platform=="Peter Sons" || game.platform=="FunTa Gaming" || game.platform=="Evoplay" || game.platform == "Hacksaw Gaming" || game.platform == "Nolimit City" || game.platform=="ParlayBay" || game.platform == "Relax Gaming" || game.platform == "Slotmill" || game.platform == "Yggdrasil Gaming" || game.platform=="Play'n GO" || game.platform=="Turbo Games (Asia)" || game.platform=="SmartSoft") {
             
             var options = {
                 method: "POST",
@@ -252,7 +252,7 @@ router.get("/play/:id", auth, async (req, res) => {
                     sign: hashh,
                     brand_uid: brand_uid,
                     game_id: game.gameCode,
-                    currency: 'THB',
+                    currency: 'CNY',
                     language: "en",
                     channel: 'pc',
                     country_code:'TH'
