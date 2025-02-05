@@ -252,7 +252,7 @@ router.get("/play/:id", auth, async (req, res) => {
                     sign: hashh,
                     brand_uid: brand_uid,
                     game_id: game.gameCode,
-                    currency: 'CNY',
+                    currency: 'THB',
                     language: "en",
                     channel: 'pc',
                     country_code:'TH'
